@@ -6,11 +6,15 @@ Tested using an original Pi B 512MB and Raspbian 10.
 
 ## Installation and Use
 
+This assumes a fresh install of Raspbian 10 and the pi will be dedicated to use
+
 - checkout this reopsitory in /home/pi
 - connect the SGP30 and SSD1306 to the Pi i2c bus
 - install the [prerequisites](./prereq.sh)
 - enable & start the systemd service
 - the first time let the device run outside if possible for 12-24 hours to gain an accurate bseline
+- as required, test the MQTT connection using `mosquitto_sub -t 'pib/#'`
+- this configuration by default is insecure, use at your own risk
 
 ## Todo
 
