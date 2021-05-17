@@ -6,6 +6,7 @@ Tested using an original Pi B 512MB and Raspbian 10.
 
 ## Installation and Use
 
+- checkout this reopsitory in /home/pi
 - connect the SGP30 and SSD1306 to the Pi i2c bus
 - install the [prerequisites](./prereq.sh)
 - enable & start the systemd service
