@@ -12,9 +12,15 @@ This assumes a fresh install of Raspbian 10 and the pi will be dedicated to use
 - connect the SGP30 and SSD1306 to the Pi i2c bus
 - install the [prerequisites](./prereq.sh)
 - enable & start the systemd service
-- the first time let the device run outside if possible for 12-24 hours to gain an accurate bseline
+- the first time let the device run outside if possible for 12-24 hours to gain an accurate baseline
 - as required, test the MQTT connection using `mosquitto_sub -t 'pib/#'`
 - this configuration by default is insecure, use at your own risk
+
+## Maintenance
+
+- the baseline info is saved in `/home/pi/.lr_read_sgp30/baseline.txt`
+- to force it to be reset on next reboot run `touch /home/pi/AQSensor/reset-baseline.flag` (or just delete the directory)
+- to send to an alterantive MQTT service (default is localhost) set the environment variable `MQTT_HOST` in the service file
 
 ## Todo
 
