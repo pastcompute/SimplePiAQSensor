@@ -76,7 +76,7 @@ if os.path.exists(baselineFile):
 
 baseline = getBaseline(baselineFile)
 if baseline is not None:
-  pub(topic, '{"baseline":[%d, %d]}' % (baseline[0], baseline[1]))
+  pub(topic, '{"baseline":[%d,%d]}' % (baseline[0], baseline[1]))
   print("baseline=", baseline[0], baseline[1])
 
 ready = False
@@ -105,7 +105,7 @@ try:
 
       baseline = getBaseline(baselineFile)
       if baseline is not None:
-        pub(topic, '{"baseline":[%d,%d]}' % baseline)
+        pub(topic, '{"baseline":[%d,%d]}' % (baseline[0], baseline[1]))
     time.sleep(5)
 
 finally:
