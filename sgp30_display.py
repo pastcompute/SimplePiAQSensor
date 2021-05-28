@@ -8,6 +8,25 @@ font = ImageFont.truetype('FreeMono.ttf', 18)
 disp.fill(0)
 disp.show()
 
+def setupDisplay():
+  width = disp.width
+  height = disp.height
+  image = Image.new('1', (width, height))
+  draw = ImageDraw.Draw(image)
+  draw.text((2, 2), 'Starting...', font=font, fill=255)
+  disp.image(image)
+  disp.show()
+
+def closeDisplay():
+  width = disp.width
+  height = disp.height
+  image = Image.new('1', (width, height))
+  draw = ImageDraw.Draw(image)
+  draw.text((2, 2), 'Shutdown.', font=font, fill=255)
+  disp.image(image)
+  disp.show()
+
+
 def updateDisplay(c, v):
   padding = 2
   width = disp.width
@@ -26,6 +45,8 @@ def updateDisplay(c, v):
   draw.text((x, top+44), now.strftime("%H:%M:%S"), font=font, fill=255)
   disp.image(image)
   disp.show()
+
+setupDisplay()
 
 mqttXtraArgs = []
 mqttDest = "localhost"
@@ -80,6 +101,7 @@ if baseline is not None:
   print("baseline=", baseline[0], baseline[1])
 
 ready = False
+sys.stdout.flush()
 time.sleep(1)
 t0 = time.perf_counter() 
 try:
@@ -96,7 +118,8 @@ try:
     print("CO2=", CO2, "TVOC=", TVOC)
     if not ready:
       sys.stdout.flush() # https://unix.stackexchange.com/a/285511
-      subprocess.run(['systemd-notify', '--ready'])
+      if 'NOTIFY_SOCKET' in os.environ:
+        subprocess.run(['systemd-notify', '--ready'])
       ready = True
     updateDisplay(CO2, TVOC)
     if dt / 60 / 60 >= 1.0:
@@ -109,6 +132,5 @@ try:
     time.sleep(5)
 
 finally:
-  pass
+  closeDisplay()
 
-print("Done")

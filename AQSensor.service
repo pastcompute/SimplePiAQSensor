@@ -9,8 +9,9 @@ User=pi
 WorkingDirectory=/home/pi/SimplePiAQSensor
 Type=notify
 NotifyAccess=all
-TimeouotStartSec=30
+TimeoutStartSec=30
 Restart=on-abnormal
+KillSignal=SIGINT
 #Environment="MQTT_HOST=192.168.1.100"
 
 [Install]
