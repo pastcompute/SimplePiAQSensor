@@ -1,10 +1,15 @@
 import busio, board, adafruit_ssd1306
 import os, sys, time, datetime, stat, subprocess, json
 from PIL import Image, ImageDraw, ImageFont
+import RPi.GPIO as GPIO
+import dht11
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
 disp = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c)
+GPIO.setmode(GPIO.BCM)
+dht = dht11.DHT11(pin=4)
 font = ImageFont.truetype('FreeMono.ttf', 18)
+font2 = ImageFont.truetype('FreeMono.ttf', 14)
 disp.fill(0)
 disp.show()
 
@@ -26,8 +31,7 @@ def closeDisplay():
   disp.image(image)
   disp.show()
 
-
-def updateDisplay(c, v):
+def updateDisplay(c, v, tempC):
   padding = 2
   width = disp.width
   height = disp.height
@@ -42,7 +46,7 @@ def updateDisplay(c, v):
     draw.text((x, top),    'eC02 %5d' % c, font=font, fill=255)
     draw.text((x, top+22), 'TVOC %5d' % v, font=font, fill=255)
   now = datetime.datetime.now()
-  draw.text((x, top+44), now.strftime("%H:%M:%S"), font=font, fill=255)
+  draw.text((x, top+44), '%s %d\u00b0' % (now.strftime('%H:%M:%S'), tempC), font=font2, fill=255)
   disp.image(image)
   disp.show()
 
@@ -110,26 +114,37 @@ time.sleep(1)
 t0 = time.perf_counter() 
 try:
   nn = 0
+  Humid = -1
+  TempC = -399
   while True:
     result = subprocess.run([cmd], stdout=subprocess.PIPE)
     value = result.stdout.decode()
     data = json.loads(value)
     CO2 = data['co2_ppm']
     TVOC = data['tvoc_ppb']
+    dhtData = dht.read()
+    data['dht_valid'] = False
+    if dhtData.is_valid():
+      Humid = dhtData.humidity
+      TempC = dhtData.temperature
+      data['dht_valid'] = True
+      data['dht_temp'] = TempC
+      data['dht_humid'] = Humid
+
     payload = json.dumps(data, separators = (',', ':'))
     pub(topic, payload)
     t1 = time.perf_counter()
     dt = t1 - t0
     if (nn % 10) == 0:
       # dont flood syslog so much
-      print("CO2=", CO2, "TVOC=", TVOC)
+      print("CO2=", CO2, "TVOC=", TVOC, 'dht_valid=', dhtData.is_valid(), "temp=", TempC, "humid=", Humid)
       sys.stdout.flush()
     if not ready:
       sys.stdout.flush() # https://unix.stackexchange.com/a/285511
       if 'NOTIFY_SOCKET' in os.environ:
         subprocess.run(['systemd-notify', '--ready'])
       ready = True
-    updateDisplay(CO2, TVOC)
+    updateDisplay(CO2, TVOC, TempC)
     if dt / 60 / 60 >= 1.0:
       t0 = t1
       print("Saving updated baseline...")
