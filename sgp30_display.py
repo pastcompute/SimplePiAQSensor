@@ -109,6 +109,7 @@ sys.stdout.flush()
 time.sleep(1)
 t0 = time.perf_counter() 
 try:
+  nn = 0
   while True:
     result = subprocess.run([cmd], stdout=subprocess.PIPE)
     value = result.stdout.decode()
@@ -119,7 +120,10 @@ try:
     pub(topic, payload)
     t1 = time.perf_counter()
     dt = t1 - t0
-    print("CO2=", CO2, "TVOC=", TVOC)
+    if (nn % 10) == 0:
+      # dont flood syslog so much
+      print("CO2=", CO2, "TVOC=", TVOC)
+      sys.stdout.flush()
     if not ready:
       sys.stdout.flush() # https://unix.stackexchange.com/a/285511
       if 'NOTIFY_SOCKET' in os.environ:
@@ -127,13 +131,17 @@ try:
       ready = True
     updateDisplay(CO2, TVOC)
     if dt / 60 / 60 >= 1.0:
-      print("Saving updated baseline")
+      t0 = t1
+      print("Saving updated baseline...")
       rc = subprocess.run([cmd, '-xs'], stdout=subprocess.PIPE)
 
       baseline = getBaseline(baselineFile)
       if baseline is not None:
+        print("baseline %d,%d" % (baseline[0], baseline[1]))
+        sys.stdout.flush()
         pub(topic, '{"baseline":[%d,%d]}' % (baseline[0], baseline[1]))
-    time.sleep(5)
+    time.sleep(6)
+    nn = nn + 1
 
 finally:
   closeDisplay()
