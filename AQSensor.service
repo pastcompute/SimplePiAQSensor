@@ -12,7 +12,7 @@ NotifyAccess=all
 TimeoutStartSec=30
 Restart=on-abnormal
 KillSignal=SIGINT
-#Environment="MQTT_HOST=192.168.1.100"
+# Environment="MQTT_HOST=192.168.1.100" "MQTT_TOPIC=my/topic"
 
 [Install]
 WantedBy=multi-user.target

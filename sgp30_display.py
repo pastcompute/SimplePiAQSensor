@@ -54,6 +54,10 @@ if 'MQTT_HOST' in os.environ:
   mqttXtraArgs.extend('-h', os.environ['MQTT_HOST'])
   mqttDest = os.environ['MQTT_HOST']
 
+mqttTopicBase = 'aqsensor'
+if 'MQTT_TOPIC' in os.environ:
+  mqttTopicBase = os.environ['MQTT_TOPIC']
+
 def pub(topic, payload):
   subprocess.run(['mosquitto_pub', '-t', topic, '-m', payload] + mqttXtraArgs, stdout=subprocess.PIPE)
 
@@ -85,7 +89,7 @@ value = result.stdout.decode()
 data = json.loads(value)
 serial = data['serial_number']
 
-topic = 'pib/sgp30/' + serial
+topic = mqttTopicBase + '/' + serial
 
 print("MQTT topic=%s, destination=%s" % (topic, mqttDest))
 
